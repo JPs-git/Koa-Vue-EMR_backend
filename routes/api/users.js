@@ -11,39 +11,39 @@ const User = require('../../models/Users')
 
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
+const { has } = require('koa/lib/response')
 
 /**
- * @route GET api/users/
+ * @route GET api/users/test
  * @description 测试接口
  * @access      接口公开
  */
-router.get('/', async (ctx) => {
+router.get('/test', async (ctx) => {
   ctx.status = 200
   ctx.body = { msg: 'users ok...' }
 })
 
 /**
- * @route POST api/users/
+ * @route POST api/users/rigister
  * @description 注册接口
  * @access      接口公开
  */
-router.post('/', async (ctx) => {
-  ctx.status = 200
-  ctx.body = { msg: 'users POST ok...' }
-
+router.post('/rigister', async (ctx) => {
   // 操作数据库
-  const findResult = await User.find({ email: ctx.request.body.email })
+  const findResult = await User.find({
+    workNumber: ctx.request.body.workNumber,
+  })
   // console.log(findResult)
-  // 查询邮箱是否已注册
+  // 查询工号是否已注册
   // 已注册
   if (findResult.length > 0) {
     ctx.status = 403
-    ctx.body = { email: '邮箱已被占用' }
+    ctx.body = { workNumber: '此工号已注册' }
   } else {
     // 未注册
-    const {errors, isValid} = validateRegistInput(ctx.request.body)
+    const { errors, isValid } = validateRegistInput(ctx.request.body)
     // 判断是否合法
-    if(!isValid){
+    if (!isValid) {
       // 不合法
       ctx.status = 400
       ctx.body = errors
@@ -54,31 +54,21 @@ router.post('/', async (ctx) => {
       name: ctx.request.body.name,
       email: ctx.request.body.email,
       password: ctx.request.body.password,
+      workNumber: ctx.request.body.workNumber,
+      permission: ctx.request.body.permission,
     })
 
-    //加密
-    await bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(newUser.password, salt, (err, hash) => {
-        // console.log(hash)
-        newUser.password = hash
-        // console.log('加密完成！')
+    // 加密
+    const bcrypt = require('bcryptjs')
+    const salt = bcrypt.genSaltSync(10)
+    const hash = bcrypt.hashSync('B4c0//', salt)
+    newUser.password = hash
 
-        // 存到数据库
-        newUser
-          .save()
-          .then((user) => {
-            ctx.body = user
-            // console.log('存储完成！')
-            console.log(newUser.password)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      })
-    })
+    // 存储到数据库
+    newUser.save()
 
     // 向客户端返回数据
-    ctx.body = newUser
+    ctx.body.data = newUser
   }
 })
 

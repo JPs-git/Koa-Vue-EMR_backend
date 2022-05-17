@@ -3,26 +3,33 @@ const Schema = mongoose.Schema
 
 // 实例化模板
 const UserSchema = new Schema({
-  name:{
+  name: {
     type: String,
-    required: true
+    required: true,
   },
-  email:{
+  email: {
     type: String,
-    required: true
+    required: true,
   },
-  password:{
+  password: {
     type: String,
-    required: true
+    required: true,
   },
-  //头像
-  avatar:{
+  // 权限
+  permission: {
     type: String,
+    required: true,
   },
-  date:{
+  // 工号
+  workNumber: {
+    type: String,
+    required: true,
+  },
+
+  date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 })
 
 module.exports = User = mongoose.model('users', UserSchema)
