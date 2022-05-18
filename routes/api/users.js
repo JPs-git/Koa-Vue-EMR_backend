@@ -11,7 +11,7 @@ const User = require('../../models/Users')
 
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
-const { has } = require('koa/lib/response')
+
 
 /**
  * @route GET api/users/test

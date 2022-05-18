@@ -17,6 +17,7 @@ require('./conf/passport')(passport)
 
 // 引入路由文件
 const users = require('./routes/api/users')
+const patients = require('./routes/api/patients')
 
 // 根路由
 router.get('/', async (ctx) => {
@@ -25,6 +26,7 @@ router.get('/', async (ctx) => {
 
 //配置路由地址
 router.use('/api/users', users)
+router.use('/api/patients', patients)
 
 // 配置路由
 app.use(router.routes()).use(router.allowedMethods())
