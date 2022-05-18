@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs/dist/bcrypt')
 const Router = require('koa-router')
 const jwt = require('jsonwebtoken')
 const secretOrkey = require('../../conf/env').secretOrkey
 const passport = require('koa-passport')
+const bcrypt = require('bcryptjs')
 
 const router = new Router()
 
@@ -59,16 +59,16 @@ router.post('/rigister', async (ctx) => {
     })
 
     // 加密
-    const bcrypt = require('bcryptjs')
+    
     const salt = bcrypt.genSaltSync(10)
-    const hash = bcrypt.hashSync('B4c0//', salt)
+    const hash = bcrypt.hashSync(newUser.password, salt)
     newUser.password = hash
 
     // 存储到数据库
     newUser.save()
 
     // 向客户端返回数据
-    ctx.body.data = newUser
+    ctx.body = newUser
   }
 })
 
@@ -79,19 +79,26 @@ router.post('/rigister', async (ctx) => {
  */
 router.post('/login', async (ctx) => {
   // 查询
-  const findResult = await User.find({ email: ctx.request.body.email })
+  const findResult = await User.find({
+    workNumber: ctx.request.body.workNumber,
+  })
   if (findResult.length == 0) {
     // 判断没查到
     ctx.status = 404
-    ctx.body = { email: '用户不存在！' }
+    ctx.body = { workNumber: '用户不存在！' }
   } else {
     // 查到后验证密码
     const user = findResult[0]
     const password = ctx.request.body.password
-    const compaireResult = await bcrypt.compare(password, user.password)
+    const compaireResult =  bcrypt.compareSync(password, user.password)
     if (compaireResult) {
       // 密码正确 返回token
-      const payload = { id: user.id, name: user.name }
+      const payload = {
+        id: user.id,
+        name: user.name,
+        workNumber: user.workNumber,
+        permission: user.permission,
+      }
       const token = jwt.sign(payload, secretOrkey, { expiresIn: 3600 })
 
       ctx.status = 200
@@ -107,7 +114,7 @@ router.post('/login', async (ctx) => {
 /**
  * @route GET api/users/current
  * @description 用户信息接口 返回用户信息
- * @access      接口私密
+ * @access      接口私密 需要token
  */
 router.get(
   '/current',
@@ -117,6 +124,8 @@ router.get(
       id: ctx.state.user.id,
       email: ctx.state.user.email,
       name: ctx.state.user.name,
+      workNumber: ctx.state.user.workNumber,
+      permission: ctx.state.user.permission,
     }
   }
 )
