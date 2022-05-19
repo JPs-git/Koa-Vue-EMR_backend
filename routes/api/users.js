@@ -12,7 +12,6 @@ const User = require('../../models/Users')
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
 
-
 /**
  * @route GET api/users/test
  * @description 测试接口
@@ -38,7 +37,7 @@ router.post('/rigister', async (ctx) => {
   // 已注册
   if (findResult.length > 0) {
     ctx.status = 403
-    ctx.body = { workNumber: '此工号已注册' }
+    ctx.body = { status: 403, data: { workNumber: '此工号已注册' } }
   } else {
     // 未注册
     const { errors, isValid } = validateRegistInput(ctx.request.body)
@@ -59,7 +58,7 @@ router.post('/rigister', async (ctx) => {
     })
 
     // 加密
-    
+
     const salt = bcrypt.genSaltSync(10)
     const hash = bcrypt.hashSync(newUser.password, salt)
     newUser.password = hash
@@ -68,7 +67,30 @@ router.post('/rigister', async (ctx) => {
     newUser.save()
 
     // 向客户端返回数据
-    ctx.body = newUser
+    ctx.body = {}
+    ctx.body.data = {success: true}
+    ctx.body.status = ctx.status
+  }
+})
+
+/**
+ * @route POST api/users/checkworknum
+ * @description 检测工号是否注册接口
+ * @access      接口公开
+ */
+router.post('/checkworknum', async (ctx) => {
+  // 查询
+  const findResult = await User.find({
+    workNumber: ctx.request.body.workNumber,
+  })
+  if (findResult.length == 0) {
+    // 此工号未注册
+    ctx.status = 200
+    ctx.body = { status: ctx.status, data: { isValid: true } }
+  } else {
+    // 此工号已注册
+    ctx.status = 200
+    ctx.body = { status: ctx.status, data: { isValid: false } }
   }
 })
 
@@ -90,7 +112,7 @@ router.post('/login', async (ctx) => {
     // 查到后验证密码
     const user = findResult[0]
     const password = ctx.request.body.password
-    const compaireResult =  bcrypt.compareSync(password, user.password)
+    const compaireResult = bcrypt.compareSync(password, user.password)
     if (compaireResult) {
       // 密码正确 返回token
       const payload = {
