@@ -7,10 +7,12 @@ const bcrypt = require('bcryptjs')
 const router = new Router()
 
 // 引入User
-const User = require('../../models/Users')
+const Users = require('../../models/Users')
 
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
+const { default: mongoose } = require('mongoose')
+const { findByIdAndUpdate } = require('../../models/Users')
 
 /**
  * @route GET api/users/test
@@ -29,8 +31,9 @@ router.get('/test', async (ctx) => {
  */
 router.post('/rigister', async (ctx) => {
   // 操作数据库
-  const findResult = await User.find({
+  const findResult = await Users.find({
     workNumber: ctx.request.body.workNumber,
+    isActive: true,
   })
   // console.log(findResult)
   // 查询工号是否已注册
@@ -49,7 +52,7 @@ router.post('/rigister', async (ctx) => {
       return
     }
     // 合法
-    const newUser = new User({
+    const newUser = new Users({
       name: ctx.request.body.name,
       email: ctx.request.body.email,
       password: ctx.request.body.password,
@@ -68,7 +71,7 @@ router.post('/rigister', async (ctx) => {
 
     // 向客户端返回数据
     ctx.body = {}
-    ctx.body.data = {success: true}
+    ctx.body.data = { success: true }
     ctx.body.status = ctx.status
   }
 })
@@ -80,8 +83,9 @@ router.post('/rigister', async (ctx) => {
  */
 router.post('/checkworknum', async (ctx) => {
   // 查询
-  const findResult = await User.find({
+  const findResult = await Users.find({
     workNumber: ctx.request.body.workNumber,
+    isActive: true,
   })
   if (findResult.length == 0) {
     // 此工号未注册
@@ -95,14 +99,69 @@ router.post('/checkworknum', async (ctx) => {
 })
 
 /**
+ * @route GET api/users/all
+ * @description 查询所有users接口
+ * @access      接口公开
+ */
+router.get('/all', async (ctx) => {
+  const findResult = await Users.find(
+    { isActive: true },
+    'name email workNumber permission'
+  ).sort('workNumber')
+
+  ctx.status = 200
+  ctx.body = { status: ctx.status, data: { findResult } }
+})
+
+/**
+ * @route POST api/users/modify
+ * @description 修改user信息接口
+ * @access      接口公开
+ */
+router.post('/modify', async (ctx) => {
+  const { errors, isValid } = validateRegistInput(ctx.request.body)
+  // 判断是否合法
+  if (!isValid) {
+    // 不合法
+    ctx.status = 400
+    ctx.body = errors
+    return
+  }
+  // 合法
+  const update = {}
+  ctx.request.body.name && (update.name = ctx.request.body.name)
+  ctx.request.body.email && (update.email = ctx.request.body.email)
+  ctx.request.body.password && (update.password = ctx.request.body.password)
+  ctx.request.body.workNumber &&
+    (update.workNumber = ctx.request.body.workNumber)
+  ctx.request.body.permission &&
+    (update.permission = ctx.request.body.permission)
+  ctx.request.body.isActive !== undefined &&
+    (update.isActive = ctx.request.body.isActive)
+  // 加密
+  if (update.password != undefined) {
+    const salt = bcrypt.genSaltSync(10)
+    const hash = bcrypt.hashSync(update.password, salt)
+    update.password = hash
+  }
+  // 存储到数据库
+  await Users.findByIdAndUpdate(ctx.request.body._id, update, { new: true })
+  // 向客户端返回数据
+  ctx.body = {}
+  ctx.body.data = { success: true }
+  ctx.body.status = ctx.status
+})
+
+/**
  * @route POST api/users/login
  * @description 登录接口 返回token
  * @access      接口公开
  */
 router.post('/login', async (ctx) => {
   // 查询
-  const findResult = await User.find({
+  const findResult = await Users.find({
     workNumber: ctx.request.body.workNumber,
+    isActive: true,
   })
   if (findResult.length == 0) {
     // 判断没查到
@@ -124,11 +183,17 @@ router.post('/login', async (ctx) => {
       const token = jwt.sign(payload, secretOrkey, { expiresIn: 3600 })
 
       ctx.status = 200
-      ctx.body = { success: true, token: 'Bearer ' + token }
+      ctx.body = {
+        status: ctx.status,
+        data: { success: true, token: 'Bearer ' + token },
+      }
     } else {
       // 密码错误
-      ctx.status = 403
-      ctx.body = { password: '密码错误！' }
+      ctx.status = 200
+      ctx.body = {
+        status: ctx.status,
+        data: { success: false, msg: '密码错误！' },
+      }
     }
   }
 })
