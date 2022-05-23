@@ -1,36 +1,35 @@
 const mongoose = require('mongoose')
-const { stringify } = require('querystring')
 const Schema = mongoose.Schema
 
 // 实例化模板
 const PatientSchema = new Schema({
   recordNum: {
-    type: Number,
+    type: String,
     required: true,
   },
   healthCardNum: {
     type: String,
-    required: true,
+    default: ''
   },
   name: {
     type: String,
-    required: true,
+    default: ''
   },
   gender: {
     type: String,
-    required: true,
+    default: 'female'
   },
   birthdate: {
     type: String,
-    required: true,
+    default: ''
   },
   age: {
     type: Number,
-    required: true,
+    default: ''
   },
   country: {
     type: String,
-    required: true,
+    default: ''
   },
   ageMonth: {
     type: Number,
@@ -46,71 +45,71 @@ const PatientSchema = new Schema({
   },
   birthProvince: {
     type: String,
-    required: true,
+    default: ''
   },
   birthCity: {
     type: String,
-    required: true,
+    default: ''
   },
   birthArea: {
     type: String,
-    required: true,
+    default: ''
   },
   originProvince: {
     type: String,
-    required: true,
+    default: ''
   },
   oringinCity: {
     type: String,
-    required: true,
+    default: ''
   },
   originArea: {
     type: String,
-    required: true,
+    default: ''
   },
   addrProvince: {
     type: String,
-    required: true,
+    default: ''
   },
   addrCity: {
     type: String,
-    required: true,
+    default: ''
   },
   addrArea: {
     type: String,
-    required: true,
+    default: ''
   },
   accountProvince: {
     type: String,
-    required: true,
+    default: ''
   },
   accountCity: {
     type: String,
-    required: true,
+    default: ''
   },
   accountArea: {
     type: String,
-    required: true,
+    default: ''
   },
   ethnicity: {
     type: String,
-    required: true,
+    default: ''
   },
   idCardNum: {
     type: String,
-    required: true,
+    default: ''
   },
   job: {
     type: String,
-    required: true,
+    default: ''
   },
   marriage: {
     type: String,
-    required: true,
+    default: ''
   },
   phone: {
     type: Number,
-    required: true,
+    default: ''
   },
   zip: {
     type: Number,
@@ -150,7 +149,7 @@ const PatientSchema = new Schema({
   },
   admissionRoute: {
     type: String,
-    required: true,
+    default: ''
   },
   admissionDate: {
     type: String,
@@ -178,11 +177,11 @@ const PatientSchema = new Schema({
   },
   diagnosis: {
     type: String,
-    required: true,
+    default: ''
   },
   diseaseNum: {
     type: String,
-    required: true,
+    default: ''
   },
   allergies: {
     type: String,
@@ -202,11 +201,11 @@ const PatientSchema = new Schema({
   },
   attendingName: {
     type: String,
-    required: true,
+    default: ''
   },
   resNurseName: {
     type: String,
-    required: true,
+    default: ''
   },
 
   date: {

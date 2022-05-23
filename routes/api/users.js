@@ -11,8 +11,7 @@ const Users = require('../../models/Users')
 
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
-const { default: mongoose } = require('mongoose')
-const { findByIdAndUpdate } = require('../../models/Users')
+
 
 /**
  * @route GET api/users/test
@@ -207,12 +206,16 @@ router.get(
   '/current',
   passport.authenticate('jwt', { session: false }),
   async (ctx) => {
+    ctx.status = 200
     ctx.body = {
-      id: ctx.state.user.id,
-      email: ctx.state.user.email,
-      name: ctx.state.user.name,
-      workNumber: ctx.state.user.workNumber,
-      permission: ctx.state.user.permission,
+      status: ctx.status,
+      data: {
+        id: ctx.state.user.id,
+        email: ctx.state.user.email,
+        name: ctx.state.user.name,
+        workNumber: ctx.state.user.workNumber,
+        permission: ctx.state.user.permission,
+      },
     }
   }
 )
