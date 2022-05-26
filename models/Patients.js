@@ -207,7 +207,10 @@ const PatientSchema = new Schema({
     type: String,
     default: ''
   },
-
+  isActive:{
+    type:Boolean,
+    default:'true'
+  },
   date: {
     type: Date,
     default: Date.now,
