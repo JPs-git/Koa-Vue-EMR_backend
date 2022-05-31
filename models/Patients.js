@@ -19,7 +19,7 @@ const PatientSchema = new Schema({
     type: String,
     default: 'female'
   },
-  birthdate: {
+  birthDate: {
     type: String,
     default: ''
   },

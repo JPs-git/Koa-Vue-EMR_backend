@@ -91,9 +91,59 @@ router.get('/', async (ctx) => {
     skip: skipNum,
   })
   // 查询总数
-  const total = await Patients.count({})
+  const total = await Patients.count(ctx.query)
   ctx.status = 200
   ctx.body = { status: ctx.status, data: { findResult, total } }
+})
+
+/**
+ * @route POST api/patients/modify
+ * @description 修改病人接口
+ * @access      接口公开
+ */
+router.post('/modify', async (ctx) => {
+  // 验证
+  const { errors, isValid } = validateNewPatientInput(ctx.request.body)
+  if (!isValid) {
+    // 不合法
+    ctx.status = 400
+    ctx.body = {
+      status: ctx.status,
+      data: {
+        errors,
+      },
+    }
+  } else {
+    // 合法
+    // 检查是否存在该用户
+    const findResult = await Patients.find({
+      recordNum: ctx.request.body.recordNum,
+    })
+    if (findResult.length === 0) {
+      // 不存在此记录
+      ctx.status = 400
+      ctx.body = {
+        status: ctx.status,
+        data: {
+          success: false,
+          msg: '试图操作的用户不存在',
+        },
+      }
+    }else{
+      // 存在该用户
+      const update = ctx.request.body
+      await Patients.findByIdAndUpdate(ctx.request.body._id,update)
+      // 向客户端返回数据
+      ctx.status = 200,
+      ctx.body = {
+        status: ctx.status,
+        data:{
+          success : true
+        }
+      }
+
+    }
+  }
 })
 
 module.exports = router.routes()
