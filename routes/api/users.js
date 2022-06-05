@@ -12,7 +12,6 @@ const Users = require('../../models/Users')
 // 引入Input验证
 const validateRegistInput = require('../../validation/register')
 
-
 /**
  * @route GET api/users/test
  * @description 测试接口
@@ -103,13 +102,18 @@ router.post('/checkworknum', async (ctx) => {
  * @access      接口公开
  */
 router.get('/all', async (ctx) => {
-  const findResult = await Users.find(
-    { isActive: true },
-    'name email workNumber permission'
-  ).sort('workNumber')
+   // 计算需要跳过的页数
+   const skipNum = ctx.query.pageSize * (ctx.query.currentPage - 1)
 
-  ctx.status = 200
-  ctx.body = { status: ctx.status, data: { findResult } }
+   ctx.query.isActive = true
+   const findResult = await Users.find(ctx.query, 'name  workNumber email permission', {
+     limit: ctx.query.pageSize,
+     skip: skipNum,
+   })
+   // 查询总数
+   const total = await Users.count(ctx.query)
+   ctx.status = 200
+   ctx.body = { status: ctx.status, data: { findResult, total } }
 })
 
 /**
@@ -164,8 +168,14 @@ router.post('/login', async (ctx) => {
   })
   if (findResult.length == 0) {
     // 判断没查到
-    ctx.status = 404
-    ctx.body = { workNumber: '用户不存在！' }
+    ctx.status = 200
+    ctx.body = {
+      status: ctx.status,
+      data: {
+        success: false,
+        msg: '用户不存在',
+      },
+    }
   } else {
     // 查到后验证密码
     const user = findResult[0]
