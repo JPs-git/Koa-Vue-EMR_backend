@@ -32,6 +32,7 @@ router.get('/', async (ctx) => {
   const skipNum = ctx.query.pageSize * (ctx.query.currentPage - 1)
 
   ctx.query.isActive = true
+  ctx.query.workNumber = { $ne: 'admin' }
   const findResult = await Admins.find(ctx.query, 'name  workNumber ', {
     limit: ctx.query.pageSize,
     skip: skipNum,
@@ -185,9 +186,30 @@ router.post('/remove', async (ctx) => {
     }
   } else {
     // 此工号已注册
-    await Admins.findByIdAndUpdate(findResult[0]._id, {isActive:false})
+    await Admins.findByIdAndUpdate(findResult[0]._id, { isActive: false })
     ctx.status = 200
     ctx.body = { status: ctx.status, data: { success: true } }
   }
 })
+
+/**
+ * @route GET api/admins/current
+ * @description 用户信息接口 返回用户信息
+ * @access      接口私密 需要token
+ */
+ router.get(
+  '/current',
+  passport.authenticate('jwt', { session: false }),
+  async (ctx) => {
+    ctx.status = 200
+    ctx.body = {
+      status: ctx.status,
+      data: {
+        id: ctx.state.user.id,
+        name: ctx.state.user.name,
+        workNumber: ctx.state.user.workNumber,
+      },
+    }
+  }
+)
 module.exports = router.routes()
