@@ -46,6 +46,7 @@ router.post('/', async (ctx) => {
     // 查询病案号是否重复
     const findResult = await Patients.find({
       recordNum: ctx.request.body.recordNum,
+      isActive:true
     })
     if (findResult.length > 0) {
       // 已经重复
